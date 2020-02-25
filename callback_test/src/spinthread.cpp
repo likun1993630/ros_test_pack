@@ -47,14 +47,16 @@ void callback2(const ros::TimerEvent&)
 void chatterCallback(const std_msgs::String::ConstPtr& msg)
 {
 
-  //ROS_INFO_STREAM("[chatterCallback thread=" << boost::this_thread::get_id() << "]");
+  ROS_INFO_STREAM("[chatterCallback thread=" << boost::this_thread::get_id() << "]");
 
   //boost::thread t1( boost::bind(&run));
-  boost::thread t2( boost::bind(&heavywork));
+  //boost::thread t2( boost::bind(&heavywork));
 
-  t2.join();
-  //t2.try_join_for(boost::chrono::milliseconds(100));
+  //t2.join();
+  //t2.try_join_for(boost::chrono::milliseconds(10));
   //t1.join();
+
+  heavywork();
   ROS_INFO("I heard: [%s]", msg->data.c_str());
 }
   
@@ -63,13 +65,15 @@ int main(int argc, char **argv)
   ros::init(argc, argv, "testtest");  
   ros::NodeHandle n;  
   
-  // ros::Timer timer1 = n.createTimer(ros::Duration(1), callback1);  
-  // ros::Timer timer2 = n.createTimer(ros::Duration(1), callback2);  
+  ros::Timer timer1 = n.createTimer(ros::Duration(1), callback1);  
+  ros::Timer timer2 = n.createTimer(ros::Duration(0.1), callback2);  
   ros::Subscriber sub = n.subscribe("chatter", 1, chatterCallback);
 
   ROS_INFO_STREAM("[main function thread=" << boost::this_thread::get_id() << "]");
   
-  ros::spin();  
+  // ros::spin(); 
+  ros::MultiThreadedSpinner spinner(4);
+  spinner.spin(); 
   
   return 0;  
 } 
